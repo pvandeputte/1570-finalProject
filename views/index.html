@@ -1,86 +1,75 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Grow A Garden — Sign up / Log in</title>
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="container" role="main">
-    <header class="brand" aria-label="Grow A Garden brand">
-      <img src="images/logo.png" alt="Grow A Garden logo">
+    <header class="brand">
+      <img src="/images/logo.png" alt="Grow A Garden logo">
       <h1>Grow A Garden</h1>
       <p>Learn, plant, and grow — join a friendly community of gardeners.</p>
     </header>
 
-    <section class="card" aria-labelledby="auth-heading">
-      <h2 id="auth-heading">Welcome back</h2>
+    <section class="card">
+      <h2>Welcome back</h2>
 
-      <div class="tabs" role="tablist" aria-label="Authentication tabs">
-        <button id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login" aria-pressed="true">Log in</button>
-        <button id="tab-signup" role="tab" aria-selected="false" aria-controls="panel-signup" aria-pressed="false">Sign up</button>
+      <div class="tabs">
+        <button id="tab-login" aria-pressed="true">Log in</button>
+        <button id="tab-signup" aria-pressed="false">Sign up</button>
       </div>
 
-      <div id="panel-login" role="tabpanel" aria-labelledby="tab-login">
-        <form id="loginForm" aria-describedby="login-desc">
-          <p id="login-desc" class="helper">Enter your account details to sign in.</p>
-
+      <!-- LOGIN FORM -->
+      <div id="panel-login">
+        <form action="/login" method="POST">
           <fieldset>
-            <label for="login-email">Email</label>
-            <input id="login-email" name="email" type="email" required>
+            <label>Email</label>
+            <input type="email" name="email" required>
           </fieldset>
 
           <fieldset>
-            <label for="login-password">Password</label>
-            <input id="login-password" name="password" type="password" required minlength="8">
+            <label>Password</label>
+            <input type="password" name="password" required minlength="8">
           </fieldset>
 
           <div class="actions">
             <button class="primary" type="submit">Log in</button>
-            <button type="button" class="secondary" id="forgotBtn">Forgot password?</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <p class="helper">Or continue with</p>
-          <div class="oauth-row">
-            <button type="button" class="secondary">Google</button>
-            <button type="button" class="secondary">Apple</button>
           </div>
         </form>
       </div>
 
-      <div id="panel-signup" role="tabpanel" aria-labelledby="tab-signup" hidden>
-        <form id="signupForm" aria-describedby="signup-desc">
-          <p id="signup-desc" class="helper">Create a free account to save your gardens.</p>
+      <!-- SIGNUP FORM -->
+      <div id="panel-signup" hidden>
+        <form action="/signup" method="POST">
 
           <fieldset>
-            <label for="signup-name">Full name</label>
-            <input id="signup-name" name="name" type="text" required>
+            <label>Full name</label>
+            <input type="text" name="name" required>
           </fieldset>
 
           <fieldset>
-            <label for="signup-email">Email</label>
-            <input id="signup-email" name="email" type="email" required>
+            <label>Email</label>
+            <input type="email" name="email" required>
           </fieldset>
 
           <fieldset>
-            <label for="signup-password">Create a password</label>
-            <input id="signup-password" name="password" type="password" required minlength="8">
+            <label>Password</label>
+            <input type="password" name="password" required minlength="8">
           </fieldset>
 
           <div class="actions">
             <button class="primary" type="submit">Create account</button>
-            <button type="button" class="secondary" id="cancelSignup">Cancel</button>
           </div>
         </form>
       </div>
 
-      <div id="message" role="status" aria-live="polite" class="message"></div>
     </section>
   </div>
-
-  <script src="script.js"></script>
 </body>
 </html>

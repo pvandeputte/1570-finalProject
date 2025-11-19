@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile — Grow A Garden</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container" style="display:block; max-width:700px;">
+
+    <header class="brand" style="justify-content:space-between; flex-direction:row;">
+      <h1>Your Profile</h1>
+      <a href="/home" class="secondary" style="color:white;">Back</a>
+    </header>
+
+    <section class="card">
+      <h2>Edit Profile</h2>
+
+      <form action="/users/update" method="POST">
+
+        <fieldset>
+          <label>Full Name</label>
+          <input type="text" name="name" required />
+        </fieldset>
+
+        <fieldset>
+          <label>Email</label>
+          <input type="email" name="email" required />
+        </fieldset>
+
+        <fieldset>
+          <label>New Password (optional)</label>
+          <input type="password" name="password" minlength="8" />
+        </fieldset>
+
+        <div class="actions">
+          <button class="primary">Save Changes</button>
+        </div>
+
+      </form>
+    </section>
+
+  </div>
+</body>
+</html>
