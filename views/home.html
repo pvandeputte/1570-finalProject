@@ -5,22 +5,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grow A Garden — Home</title>
+
   <link rel="stylesheet" href="styles.css">
+
   <style>
+    /* Tab System */
     .nav-tabs {
       display: flex;
       gap: 1rem;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
 
     .nav-tabs button {
-      background: #2e8a46;
+      background: var(--brand-forest);
       border: 0;
       color: white;
-      padding: 0.5rem 1rem;
+      padding: 0.65rem 1rem;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
+      transition: 0.15s all ease-in-out;
+    }
+
+    .nav-tabs button:hover {
+      opacity: 0.85;
     }
 
     .tab-panel {
@@ -30,16 +39,40 @@
     .tab-panel.active {
       display: block;
     }
+
+    /* Plant Cards */
+    .plant-box {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .plant-box h3 {
+      margin: 0 0 0.4rem;
+    }
+
+    .delete-btn {
+      background: crimson;
+      padding: 0.45rem 0.75rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      margin-top: 0.4rem;
+    }
   </style>
 </head>
 
 <body>
-  <div class="container" style="display:block; max-width:950px;">
+  <div class="container" style="display:block; max-width:1050px;">
 
+    <!-- HEADER -->
     <header class="brand" style="flex-direction:row; justify-content:space-between;">
       <div>
         <h1>Grow A Garden</h1>
-        <p>Welcome back to your garden!</p>
+        <p>Your personal gardening hub 🌱</p>
       </div>
 
       <nav>
@@ -51,27 +84,28 @@
     <!-- TABS -->
     <div class="nav-tabs">
       <button onclick="switchTab('knowledge')">General Knowledge</button>
-      <button onclick="switchTab('region')">Plants in Your Region</button>
+      <button onclick="switchTab('region')">Plants In Your Region</button>
       <button onclick="switchTab('lookup')">Plant Lookup</button>
-      <button onclick="switchTab('saved')">Your Plants</button>
+      <button onclick="switchTab('saved')">Your Saved Plants</button>
     </div>
 
     <!-- GENERAL KNOWLEDGE -->
     <section id="knowledge" class="tab-panel active card">
       <h2>General Plant Knowledge</h2>
-      <p class="helper">Learn basic gardening categories.</p>
+      <p class="helper">Learn basic gardening categories and what grows well.</p>
 
       <ul>
         <li><b>Flowers:</b> Tulips, Roses, Daisies, Sunflowers</li>
         <li><b>Vegetables:</b> Tomatoes, Lettuce, Peppers, Cucumbers</li>
         <li><b>Fruits:</b> Strawberries, Blueberries, Peaches, Apples</li>
+        <li><b>Herbs:</b> Basil, Mint, Rosemary, Thyme</li>
       </ul>
     </section>
 
-    <!-- REGION SUGGESTIONS -->
+    <!-- REGION-BASED SUGGESTIONS -->
     <section id="region" class="tab-panel card">
       <h2>Plants Recommended For Your Region</h2>
-      <p class="helper">Fetching your location...</p>
+      <p class="helper">Finding plants based on your location...</p>
 
       <div id="regionResults"></div>
     </section>
@@ -79,9 +113,10 @@
     <!-- PLANT LOOKUP -->
     <section id="lookup" class="tab-panel card">
       <h2>Plant Lookup</h2>
-      <input id="lookupInput" type="text" placeholder="Search any plant..." style="padding:0.7rem; width:100%;" />
+      <p class="helper">Find details about any plant using the Perenual API.</p>
 
-      <button class="primary" onclick="searchPlant()">Search</button>
+      <input id="lookupInput" type="text" placeholder="Search any plant..." style="padding:0.8rem; width:100%; border-radius:10px;" />
+      <button class="primary" onclick="searchPlant()" style="margin-top:0.6rem;">Search</button>
 
       <div id="lookupResults"></div>
     </section>
@@ -89,50 +124,127 @@
     <!-- SAVED PLANTS -->
     <section id="saved" class="tab-panel card">
       <h2>Your Saved Plants</h2>
+      <p class="helper">Here are plants you’ve saved for your garden plan.</p>
       <div id="savedContainer"></div>
     </section>
 
   </div>
 
+
   <script>
+    // ------------------------------
+    // SWITCH TABS
+    // ------------------------------
     function switchTab(tabName) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove("active"));
       document.getElementById(tabName).classList.add("active");
+
+      if (tabName === "saved") loadSavedPlants();
+      if (tabName === "region") loadRegionPlants();
     }
 
-    // REGION SUGGESTIONS
+    // ------------------------------
+    // REGION RECOMMENDATIONS
+    // ------------------------------
     function loadRegionPlants() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const { latitude, longitude } = pos.coords;
-
-          fetch(`/plants/region?lat=${latitude}&lon=${longitude}`)
-            .then(res => res.json())
-            .then(data => {
-              const box = document.getElementById("regionResults");
-              box.innerHTML = data?.data
-                ? data.data.map(p => `<p><b>${p.common_name}</b></p>`).join("")
-                : "No data";
-            });
-        });
+      if (!navigator.geolocation) {
+        document.getElementById("regionResults").innerHTML = "Geolocation not supported.";
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+
+        fetch(`/plants/region?lat=${latitude}&lon=${longitude}`)
+          .then(res => res.json())
+          .then(data => {
+            const box = document.getElementById("regionResults");
+            box.innerHTML = "";
+
+            (data || []).forEach(p => {
+              box.innerHTML += `
+                <div class="plant-box">
+                  <h3>${p.common_name || "Unknown Plant"}</h3>
+                  <p><b>Scientific:</b> ${p.scientific_name || "N/A"}</p>
+                </div>`;
+            });
+          });
+      });
     }
 
-    // LOOKUP SEARCH
+    // ------------------------------
+    // PLANT LOOKUP (API SEARCH)
+    // ------------------------------
     function searchPlant() {
-      const name = document.getElementById("lookupInput").value;
+      const name = document.getElementById("lookupInput").value.trim();
+      if (!name) return;
+
       fetch(`/plants/search?q=${name}`)
         .then(res => res.json())
         .then(data => {
           const box = document.getElementById("lookupResults");
-          box.innerHTML = data?.data
-            ? data.data.map(p => `<p><b>${p.common_name}</b></p>`).join("")
-            : "No results found.";
+          box.innerHTML = "";
+
+          (data || []).forEach(p => {
+            box.innerHTML += `
+              <div class="plant-box">
+                <h3>${p.common_name || "Unknown"}</h3>
+                <p><b>Scientific:</b> ${p.scientific_name || "N/A"}</p>
+                <button class="primary" onclick="savePlant('${p.common_name || ""}')">Save Plant</button>
+              </div>
+            `;
+          });
         });
     }
 
-    // Load region + saved plants on page load
+    // ------------------------------
+    // SAVE PLANT
+    // ------------------------------
+    function savePlant(name) {
+      fetch(`/plants/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      })
+        .then(res => res.json())
+        .then(() => {
+          alert("Plant saved!");
+          loadSavedPlants();
+        });
+    }
+
+    // ------------------------------
+    // LOAD SAVED PLANTS
+    // ------------------------------
+    function loadSavedPlants() {
+      fetch("/plants/saved")
+        .then(res => res.json())
+        .then(plants => {
+          const box = document.getElementById("savedContainer");
+          box.innerHTML = "";
+
+          plants.forEach(p => {
+            box.innerHTML += `
+              <div class="plant-box">
+                <h3>${p.name}</h3>
+                <button class="delete-btn" onclick="deletePlant('${p._id}')">Delete</button>
+              </div>`;
+          });
+        });
+    }
+
+    // ------------------------------
+    // DELETE PLANT
+    // ------------------------------
+    function deletePlant(id) {
+      fetch(`/plants/${id}`, { method: "DELETE" })
+        .then(res => res.json())
+        .then(() => loadSavedPlants());
+    }
+
+    // AUTO LOAD REGION + SAVED DATA
     loadRegionPlants();
+    loadSavedPlants();
   </script>
 
 </body>

@@ -1,15 +1,15 @@
 const axios = require("axios");
 
-async function getPlantByName(name) {
-  const url = `https://perenual.com/api/species-list?key=${process.env.PERENUAL_KEY}&q=${name}`;
+const API_KEY = process.env.PERENUAL_API_KEY;
 
-  try {
-    const res = await axios.get(url);
-    return res.data;
-  } catch (err) {
-    console.error("API error:", err);
-    return null;
-  }
-}
+exports.getPlantByName = async (name) => {
+  const url = `https://perenual.com/api/species-list?key=${API_KEY}&q=${name}`;
+  const res = await axios.get(url);
+  return res.data.data || [];
+};
 
-module.exports = { getPlantByName };
+exports.getPlantsByRegion = async (lat, lon) => {
+  const url = `https://perenual.com/api/species-list?key=${API_KEY}&indoor=0&hardiness=7`;
+  const res = await axios.get(url);
+  return res.data.data || [];
+};
