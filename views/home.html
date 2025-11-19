@@ -6,69 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grow A Garden — Home</title>
 
-  <link rel="stylesheet" href="styles.css">
-
-  <style>
-    /* Tab System */
-    .nav-tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .nav-tabs button {
-      background: var(--brand-forest);
-      border: 0;
-      color: white;
-      padding: 0.65rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.15s all ease-in-out;
-    }
-
-    .nav-tabs button:hover {
-      opacity: 0.85;
-    }
-
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    /* Plant Cards */
-    .plant-box {
-      background: white;
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 0.75rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .plant-box h3 {
-      margin: 0 0 0.4rem;
-    }
-
-    .delete-btn {
-      background: crimson;
-      padding: 0.45rem 0.75rem;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      margin-top: 0.4rem;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body>
   <div class="container" style="display:block; max-width:1050px;">
 
-    <!-- HEADER -->
     <header class="brand" style="flex-direction:row; justify-content:space-between;">
       <div>
         <h1>Grow A Garden</h1>
@@ -81,7 +24,6 @@
       </nav>
     </header>
 
-    <!-- TABS -->
     <div class="nav-tabs">
       <button onclick="switchTab('knowledge')">General Knowledge</button>
       <button onclick="switchTab('region')">Plants In Your Region</button>
@@ -89,7 +31,7 @@
       <button onclick="switchTab('saved')">Your Saved Plants</button>
     </div>
 
-    <!-- GENERAL KNOWLEDGE -->
+    <!-- KNOWLEDGE TAB -->
     <section id="knowledge" class="tab-panel active card">
       <h2>General Plant Knowledge</h2>
       <p class="helper">Learn basic gardening categories and what grows well.</p>
@@ -102,15 +44,14 @@
       </ul>
     </section>
 
-    <!-- REGION-BASED SUGGESTIONS -->
+    <!-- REGION TAB -->
     <section id="region" class="tab-panel card">
       <h2>Plants Recommended For Your Region</h2>
       <p class="helper">Finding plants based on your location...</p>
-
       <div id="regionResults"></div>
     </section>
 
-    <!-- PLANT LOOKUP -->
+    <!-- LOOKUP TAB -->
     <section id="lookup" class="tab-panel card">
       <h2>Plant Lookup</h2>
       <p class="helper">Find details about any plant using the Perenual API.</p>
@@ -121,7 +62,7 @@
       <div id="lookupResults"></div>
     </section>
 
-    <!-- SAVED PLANTS -->
+    <!-- SAVED TAB -->
     <section id="saved" class="tab-panel card">
       <h2>Your Saved Plants</h2>
       <p class="helper">Here are plants you’ve saved for your garden plan.</p>
@@ -132,9 +73,6 @@
 
 
   <script>
-    // ------------------------------
-    // SWITCH TABS
-    // ------------------------------
     function switchTab(tabName) {
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove("active"));
       document.getElementById(tabName).classList.add("active");
@@ -143,79 +81,45 @@
       if (tabName === "region") loadRegionPlants();
     }
 
-    // ------------------------------
-    // REGION RECOMMENDATIONS
-    // ------------------------------
-    function loadRegionPlants() {
-      if (!navigator.geolocation) {
-        document.getElementById("regionResults").innerHTML = "Geolocation not supported.";
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(pos => {
-        const { latitude, longitude } = pos.coords;
-
-        fetch(`/plants/region?lat=${latitude}&lon=${longitude}`)
-          .then(res => res.json())
-          .then(data => {
-            const box = document.getElementById("regionResults");
-            box.innerHTML = "";
-
-            (data || []).forEach(p => {
-              box.innerHTML += `
-                <div class="plant-box">
-                  <h3>${p.common_name || "Unknown Plant"}</h3>
-                  <p><b>Scientific:</b> ${p.scientific_name || "N/A"}</p>
-                </div>`;
-            });
-          });
-      });
-    }
-
-    // ------------------------------
-    // PLANT LOOKUP (API SEARCH)
-    // ------------------------------
+    // SEARCH
     function searchPlant() {
-      const name = document.getElementById("lookupInput").value.trim();
-      if (!name) return;
+      const q = document.getElementById("lookupInput").value.trim();
+      if (!q) return;
 
-      fetch(`/plants/search?q=${name}`)
+      fetch(`/plants/search?q=${q}`)
         .then(res => res.json())
-        .then(data => {
+        .then(plants => {
           const box = document.getElementById("lookupResults");
           box.innerHTML = "";
 
-          (data || []).forEach(p => {
+          plants.forEach(p => {
             box.innerHTML += `
-              <div class="plant-box">
-                <h3>${p.common_name || "Unknown"}</h3>
-                <p><b>Scientific:</b> ${p.scientific_name || "N/A"}</p>
-                <button class="primary" onclick="savePlant('${p.common_name || ""}')">Save Plant</button>
+              <div class="lookup-entry">
+                <h3>${p.common_name}</h3>
+                <p><b>Scientific:</b> ${p.scientific_name}</p>
+                <img src="${p.image}" width="160">
+
+                <button class="primary" onclick='savePlant(${JSON.stringify(p)})'>
+                  Save Plant
+                </button>
               </div>
             `;
           });
         });
     }
 
-    // ------------------------------
-    // SAVE PLANT
-    // ------------------------------
-    function savePlant(name) {
-      fetch(`/plants/save`, {
+    // SAVE
+    function savePlant(plantObj) {
+      fetch("/plants/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
+        body: JSON.stringify(plantObj)
       })
         .then(res => res.json())
-        .then(() => {
-          alert("Plant saved!");
-          loadSavedPlants();
-        });
+        .then(() => loadSavedPlants());
     }
 
-    // ------------------------------
-    // LOAD SAVED PLANTS
-    // ------------------------------
+    // SAVED
     function loadSavedPlants() {
       fetch("/plants/saved")
         .then(res => res.json())
@@ -225,26 +129,54 @@
 
           plants.forEach(p => {
             box.innerHTML += `
-              <div class="plant-box">
-                <h3>${p.name}</h3>
-                <button class="delete-btn" onclick="deletePlant('${p._id}')">Delete</button>
-              </div>`;
+              <div class="plant-card">
+                <img src="${p.image}" width="160">
+                <h3>${p.common_name}</h3>
+                <p><b>Scientific:</b> ${p.scientific_name}</p>
+                <p><b>Sunlight:</b> ${p.sunlight.join(", ")}</p>
+                <p><b>Watering:</b> ${p.watering}</p>
+
+                <button onclick="deletePlant('${p._id}')" class="secondary">
+                  Delete
+                </button>
+              </div>
+            `;
           });
         });
     }
 
-    // ------------------------------
-    // DELETE PLANT
-    // ------------------------------
+    // DELETE
     function deletePlant(id) {
       fetch(`/plants/${id}`, { method: "DELETE" })
-        .then(res => res.json())
         .then(() => loadSavedPlants());
     }
 
-    // AUTO LOAD REGION + SAVED DATA
-    loadRegionPlants();
+    // REGION
+    function loadRegionPlants() {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+
+        fetch(`/plants/region?lat=${latitude}&lon=${longitude}`)
+          .then(res => res.json())
+          .then(plants => {
+            const box = document.getElementById("regionResults");
+            box.innerHTML = "";
+
+            plants.forEach(p => {
+              box.innerHTML += `
+                <div class="lookup-entry">
+                  <h3>${p.common_name}</h3>
+                  <p>${p.scientific_name}</p>
+                  <img src="${p.image}" width="160">
+                </div>
+              `;
+            });
+          });
+      });
+    }
+
     loadSavedPlants();
+    loadRegionPlants();
   </script>
 
 </body>

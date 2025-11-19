@@ -1,96 +1,45 @@
 const express = require("express");
-const path = require("path");
+const mongoose = require("mongoose");
 const session = require("express-session");
-const connectDB = require("./config/db");
+const path = require("path");
 
 require("dotenv").config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Connect to MongoDB
-connectDB();
-
-// Body parser
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Sessions
-app.use(
-  session({
-    secret: "supersecretkey",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-// Static files
-app.use(express.static(path.join(__dirname, "public")));
-
-// ROUTES
-app.use("/", require("./routes/homeRoutes"));
-app.use("/", require("./routes/authRoutes"));
-app.use("/plants", require("./routes/plantRoutes"));
-app.use("/admin", require("./routes/adminRoutes"));
-
-app.listen(PORT, () =>
-  console.log(`🌱 Server running at http://localhost:${PORT}`)
-);
-// server.js
-const express = require("express");
-const path = require("path");
-const session = require("express-session");
-const dotenv = require("dotenv");
-
-dotenv.config();
-require("./config/db"); // Connect MongoDB
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ---- Body Parsing ---- //
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// ---- Sessions ---- //
-app.use(
-  session({
-    secret: "supersecret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-// ---- Static Files ---- //
-// CSS + JS
-app.use("/public", express.static(path.join(__dirname, "public")));
-// Images
-app.use("/images", express.static(path.join(__dirname, "images")));
-// Views folder static (styles.css is inside views)
-app.use(express.static(path.join(__dirname, "views")));
-
-// ---- ROUTES ---- //
+const mainRoutes = require("./routes/mainRoutes");
 const authRoutes = require("./routes/authRoutes");
 const plantRoutes = require("./routes/plantRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const homeRoutes = require("./routes/homeRoutes");
+const userRoutes = require("./routes/userRoutes");
 
+const app = express();
+
+// Session middleware
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secret123",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// Parse requests
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files
+app.use(express.static("public"));
+app.use("/images", express.static(path.join(__dirname, "public/images")));
+
+// Views folder
+app.set("views", path.join(__dirname, "views"));
+
+// Routes
+app.use("/", mainRoutes);
 app.use("/", authRoutes);
-app.use("/home", homeRoutes);
 app.use("/plants", plantRoutes);
-app.use("/admin", adminRoutes);
+app.use("/users", userRoutes);
 
-// ---- HOME (default login page) ---- //
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
-});
+// Connect MongoDB
+require("./config/db")();
 
-// ---- 404 ---- //
-app.use((req, res) => {
-  res.status(404).send("Page Not Found");
-});
-
-// ---- LISTEN ---- //
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));

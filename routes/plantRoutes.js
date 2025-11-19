@@ -1,12 +1,10 @@
 const router = require("express").Router();
 const plant = require("../controllers/plantController");
 
-router.get("/", plant.listPlants);
-router.get("/saved", plant.savedPlants);
-router.get("/search", plant.searchPlant);
-router.get("/region", plant.regionPlants);
-router.post("/add", plant.addPlant);
-router.post("/save", plant.savePlantFromSearch);
+router.get("/search", plant.search);
+router.get("/region", plant.region);
+router.get("/saved", plant.getSaved);
+router.post("/save", plant.savePlant);
 router.delete("/:id", plant.deletePlant);
 
 module.exports = router;

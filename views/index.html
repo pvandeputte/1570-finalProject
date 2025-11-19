@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Grow A Garden — Sign up / Log in</title>
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body>
@@ -47,9 +47,8 @@
       <!-- SIGNUP FORM -->
       <div id="panel-signup" hidden>
         <form action="/signup" method="POST">
-
           <fieldset>
-            <label>Full name</label>
+            <label>Full Name</label>
             <input type="text" name="name" required>
           </fieldset>
 
@@ -71,5 +70,28 @@
 
     </section>
   </div>
+
+  <script>
+    const tabLogin = document.getElementById("tab-login");
+    const tabSignup = document.getElementById("tab-signup");
+    const panelLogin = document.getElementById("panel-login");
+    const panelSignup = document.getElementById("panel-signup");
+
+    tabLogin.onclick = () => {
+      panelLogin.hidden = false;
+      panelSignup.hidden = true;
+      tabLogin.setAttribute("aria-pressed", "true");
+      tabSignup.setAttribute("aria-pressed", "false");
+    };
+
+    tabSignup.onclick = () => {
+      panelLogin.hidden = true;
+      panelSignup.hidden = false;
+      tabLogin.setAttribute("aria-pressed", "false");
+      tabSignup.setAttribute("aria-pressed", "true");
+    };
+  </script>
+
 </body>
+
 </html>

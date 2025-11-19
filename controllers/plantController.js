@@ -1,47 +1,29 @@
 const Plant = require("../models/Plant");
-const { getPlantByName, getPlantsByRegion } = require("../config/perenualApi");
+const { searchPlants, regionPlants } = require("../config/perenualApi");
 
-exports.listPlants = async (req, res) => {
-  res.sendFile("home.html", { root: "views" });
+exports.search = async (req, res) => {
+  const results = await searchPlants(req.query.q);
+  res.json(results);
 };
 
-exports.savedPlants = async (req, res) => {
+exports.region = async (req, res) => {
+  const { lat, lon } = req.query;
+  const results = await regionPlants(lat, lon);
+  res.json(results);
+};
+
+exports.savePlant = async (req, res) => {
+  const plant = await Plant.create({
+    ...req.body,
+    owner: req.session.user._id,
+  });
+
+  res.json({ success: true, plant });
+};
+
+exports.getSaved = async (req, res) => {
   const plants = await Plant.find({ owner: req.session.user._id });
   res.json(plants);
-};
-
-exports.searchPlant = async (req, res) => {
-  const results = await getPlantByName(req.query.q || "");
-  res.json(results);
-};
-
-exports.regionPlants = async (req, res) => {
-  const { lat, lon } = req.query;
-  const results = await getPlantsByRegion(lat, lon);
-  res.json(results);
-};
-
-exports.addPlant = async (req, res) => {
-  const plant = new Plant({
-    name: req.body.name,
-    sunlight: req.body.sunlight,
-    watering: req.body.watering,
-    soil: req.body.soil,
-    owner: req.session.user._id,
-  });
-  await plant.save();
-  res.redirect("/home");
-};
-
-exports.savePlantFromSearch = async (req, res) => {
-  const plant = new Plant({
-    name: req.body.name,
-    sunlight: req.body.sunlight || "",
-    watering: req.body.watering || "",
-    owner: req.session.user._id,
-  });
-  await plant.save();
-  res.json({ success: true });
 };
 
 exports.deletePlant = async (req, res) => {
